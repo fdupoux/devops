@@ -1,0 +1,5 @@
+---
+- include: installation.yml
+  tags: ['repositories','installation','repositories-installation']
+- include: configuration.yml
+  tags: ['repositories','configuration','repositories-configuration']

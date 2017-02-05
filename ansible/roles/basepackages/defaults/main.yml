@@ -1,0 +1,36 @@
+---
+basepackages_pkglist:
+  - bash-completion
+  - bind-utils
+  - bzip2
+  - cloud-utils-growpart
+  - dos2unix
+  - dstat
+  - git
+  - gzip
+  - htop
+  - logrotate
+  - lsof
+  - lynx
+  - lzop
+  - mc
+  - mlocate
+  - nc
+  - ncdu
+  - net-tools
+  - ntp
+  - patch
+  - psmisc
+  - python2-boto
+  - python-httplib2
+  - python-psycopg2
+  - rsync
+  - screen
+  - strace
+  - sysstat
+  - tcpdump
+  - unzip
+  - vim
+  - vim-enhanced
+  - xz
+  - yum-plugin-priorities

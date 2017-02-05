@@ -1,0 +1,4 @@
+---
+- name: Configure access to EPEL repository
+  yum: name=epel-release state=installed
+  when: ansible_os_family == "RedHat"

@@ -1,0 +1,4 @@
+---
+- src: https://github.com/fdupoux/ansible-role-centos-ami-builder
+  version: master
+  name: centos-ami-builder
