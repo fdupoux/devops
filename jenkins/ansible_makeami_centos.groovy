@@ -64,7 +64,7 @@ for (account in accounts) {
         env('ANSIBLE_FORCE_COLOR', 1)
         env('ANSIBLE_SSH_ARGS', '')
         env('PYTHONUNBUFFERED', 1)
-        propertiesFile("${profilespath}/${account}-aws-credentials.properties")
+        propertiesFile("${profilespath}/aws-account-${account}.properties")
       }
 
       def ansible_inventory = "hosts"
