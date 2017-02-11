@@ -1,18 +1,27 @@
 def profilespath = '/home/francois/PROPFILES'
-def git_repo_url = 'https://github.com/fdupoux/devops.git'
+def git_base_repo_url = 'https://github.com/fdupoux/devops.git'
 def jenkins_node = 'slave-infras'
 def branch_name = 'master'
 
-def ansible_initialization = """#!/bin/bash
+def script_initialization = """#!/bin/bash
+echo "Job running on \$(hostname -f)"
+echo "WORKSPACE='\${WORKSPACE}'"
+du -sh \${WORKSPACE}/*
+mkdir -p \${WORKSPACE}/git_combined
+rsync -a \${WORKSPACE}/git_base_repo/ \${WORKSPACE}/git_combined/ --exclude=.git --delete --delete-excluded
+rsync -a \${WORKSPACE}/git_extra_repo/ \${WORKSPACE}/git_combined/ --exclude=.git
+cd \${WORKSPACE}/git_combined
 export VAULT_PASSWD=~/.vault-password
+ansible --version
 make vendor
 cd ansible
 """
- 
+
 // read list of aws accounts from properties file
 Properties prop = new Properties()
-prop.load(new FileInputStream("${profilespath}/aws-accounts-list.properties"));
+prop.load(new FileInputStream("${profilespath}/global.properties"));
 accounts = prop.get("AWS_ACCOUNTS_LIST").toString().split(",");
+git_extra_repo_url = prop.get("GIT_DEVOPS_PRIVATE").toString()
 
 // create a CentOS AMI Creator job for each AWS Account
 for (account in accounts) {
@@ -24,12 +33,26 @@ for (account in accounts) {
     wrappers {
       colorizeOutput('xterm')
     }
-    scm {
+    multiscm {
+      // get data from the main repository
       git {
         remote {
-          url(git_repo_url)
+          url(git_base_repo_url)
         }
         branch('origin/' + branch_name)
+        extensions {
+            relativeTargetDirectory("git_base_repo")
+        }
+      }
+      // get data from additional repository (to add extra files)
+      git {
+        remote {
+          url(git_extra_repo_url)
+        }
+        branch('origin/' + branch_name)
+        extensions {
+            relativeTargetDirectory("git_extra_repo")
+        }
       }
     }
     steps {
@@ -50,7 +73,7 @@ for (account in accounts) {
       def ansible_playbook = "playbook-generic-prod-makeami-centos.yml"
       def ansible_command = "ansible-playbook -i ${ansible_inventory} ${ansible_args_extra} ${ansible_playbook}"
 
-      shell(ansible_initialization + ansible_command)
+      shell(script_initialization + ansible_command)
     }
     publishers {
       archiveArtifacts {
