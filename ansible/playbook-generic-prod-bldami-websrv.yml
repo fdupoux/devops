@@ -45,13 +45,14 @@
   roles:
     - role: generic-ami-builder
       generic_ami_builder_step: "generic-ami-builder-image"
-      generic_ami_builder_aws_region: "{{ lookup('env','AWS_REGION') }}"
+      generic_ami_builder_aws_region: "{{ aws_region }}"
       generic_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
       generic_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
       generic_ami_builder_ec2_stack_name: 'stack-ami-builder-app-ec2-websrv'
       generic_ami_builder_ami_name: "ami_centos7_websrv"
       generic_ami_builder_ami_tags:
         description: 'Custom CentOS-7 image configured as a web server'
+        account: '{{ account }}'
         ami_type: 'applications'
         app_name: 'websrv'
         os_name: 'centos'

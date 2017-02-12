@@ -4,7 +4,7 @@
 
   roles:
     - role: centos-ami-builder
-      centos_ami_builder_aws_region: "{{ lookup('env','AWS_REGION') }}"
+      centos_ami_builder_aws_region: "{{ aws_region }}"
       centos_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
       centos_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
       centos_ami_builder_ec2_keypair: "jenkins@zl-infras-p01"
@@ -16,4 +16,4 @@
       centos_ami_builder_bootsize: "256M"
       centos_ami_builder_rootsize: "2048M"
       centos_ami_builder_ami_name: "ami_centos7_custom"
-      centos_ami_builder_ami_tags: {ami_type: 'minimal', os_name: 'centos', os_majver: '7'}
+      centos_ami_builder_ami_tags: {account: '{{ account }}', ami_type: 'minimal', os_name: 'centos', os_majver: '7'}
