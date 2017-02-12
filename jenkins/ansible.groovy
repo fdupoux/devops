@@ -59,6 +59,13 @@ def jobs =
     argsextra: "-e input_ami_id=\${IMPORTED_AMI_ID}",
     copy_artifact: [category:'makeami', target:'websrv', filepath:'**/target/ami_id.txt'],
   ],
+  [
+    target: 'websrv',
+    disabled: false,
+    accounts: [aws_accounts[2]],
+    category: 'config',
+    jnknode: 'slave-infras',
+  ],
 ]
 
 // create jobs

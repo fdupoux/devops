@@ -1,0 +1,10 @@
+---
+- name: Apply latest configuration on existing web server
+  hosts: "{{ host }}"
+  remote_user: admin
+  become: yes
+  serial: 1
+  max_fail_percentage: 30
+
+  roles:
+    - main-websrv
