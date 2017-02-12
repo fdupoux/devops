@@ -157,7 +157,7 @@ for (jobdata in jobs)
 
           if (copy_artifact != "")
           {
-            copyArtifacts("${account}_ansible_${copy_artifact.category}_${copy_artifact.target}")
+            copyArtifacts("${account}_ansible_${copy_artifact.env}_${copy_artifact.category}_${copy_artifact.target}")
             {
               includePatterns(copy_artifact.filepath)
               targetDirectory('imported_artifacts')
