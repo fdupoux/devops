@@ -4,7 +4,7 @@
   roles:
     - role: generic-ami-builder
       generic_ami_builder_step: "generic-ami-builder-prepare-vpc"
-      generic_ami_builder_aws_region: "{{ lookup('env','AWS_REGION') }}"
+      generic_ami_builder_aws_region: "{{ aws_region }}"
       generic_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
       generic_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
 
@@ -13,14 +13,14 @@
   roles:
     - role: generic-ami-builder
       generic_ami_builder_step: "generic-ami-builder-prepare-ec2"
-      generic_ami_builder_aws_region: "{{ lookup('env','AWS_REGION') }}"
+      generic_ami_builder_aws_region: "{{ aws_region }}"
       generic_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
       generic_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
       generic_ami_builder_ec2_stack_name: 'stack-ami-builder-app-ec2-websrv'
       generic_ami_builder_base_ami_id: "{{ input_ami_id }}"
       generic_ami_builder_ec2_keypair: "jenkins@zl-infras-p01"
       generic_ami_builder_allowip: "0.0.0.0/0"
-      generic_ami_builder_host_group: "{{ lookup('env','ACCOUNT') }}-prod-ec2"
+      generic_ami_builder_host_group: "{{ account }}-{{ env }}-ec2"
       generic_ami_builder_disksize: '5'
 
 - name: Execute ansible on the temporary EC2 instance
@@ -63,7 +63,7 @@
   roles:
     - role: generic-ami-builder
       generic_ami_builder_step: "generic-ami-builder-cleanup"
-      generic_ami_builder_aws_region: "{{ lookup('env','AWS_REGION') }}"
+      generic_ami_builder_aws_region: "{{ aws_region }}"
       generic_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
       generic_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
       generic_ami_builder_ec2_stack_name: 'stack-ami-builder-app-ec2-websrv'

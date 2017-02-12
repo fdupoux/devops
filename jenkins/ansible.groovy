@@ -29,7 +29,7 @@ prop.load(new FileInputStream("${profilespath}/global.properties"));
 aws_accounts = prop.get("AWS_ACCOUNTS_LIST").toString().split(",");
 git_extra_repo_url = prop.get("GIT_DEVOPS_PRIVATE").toString()
 
-// Data which are specific to each job
+// define jobs parameters
 def jobs =
 [
   [
@@ -39,6 +39,7 @@ def jobs =
     category: 'bldami',
     jnknode: 'slave-infras',
     archive_artifact: "**/target/ami_id.txt",
+    envs: ['none'],
   ],
   [
     target: 'websrv',
@@ -47,8 +48,9 @@ def jobs =
     category: 'bldami',
     jnknode: 'slave-infras',
     argsextra: "-e input_ami_id=\${IMPORTED_AMI_ID}",
-    copy_artifact: [category:'bldami', target:'centos', filepath:'**/target/ami_id.txt'],
+    copy_artifact: [category:'bldami', target:'centos', env: 'none', filepath:'**/target/ami_id.txt'],
     archive_artifact: "**/target/ami_id.txt",
+    envs: ['none'],
   ],
   [
     target: 'websrv',
@@ -57,7 +59,8 @@ def jobs =
     category: 'deploy',
     jnknode: 'slave-infras',
     argsextra: "-e input_ami_id=\${IMPORTED_AMI_ID}",
-    copy_artifact: [category:'bldami', target:'websrv', filepath:'**/target/ami_id.txt'],
+    copy_artifact: [category:'bldami', target:'websrv', env: 'none', filepath:'**/target/ami_id.txt'],
+    envs: ['test', 'prod'],
   ],
   [
     target: 'websrv',
@@ -65,122 +68,125 @@ def jobs =
     accounts: [aws_accounts[2]],
     category: 'config',
     jnknode: 'slave-infras',
+    envs: ['test', 'prod'],
   ],
 ]
 
 // create jobs
-jobs.each
-{ data ->
-
+for (jobdata in jobs)
+{
   def job_disabled = false
-  if (data.containsKey('disabled'))
+  if (jobdata.containsKey('disabled'))
   {
-    job_disabled = data.disabled
+    job_disabled = jobdata.disabled
   }
   def ansible_args_extra = ""
-  if (data.containsKey('argsextra'))
+  if (jobdata.containsKey('argsextra'))
   {
-    ansible_args_extra = data.argsextra
+    ansible_args_extra = jobdata.argsextra
   }
   def copy_artifact = ""
-  if (data.containsKey('copy_artifact'))
+  if (jobdata.containsKey('copy_artifact'))
   {
-    copy_artifact = data.copy_artifact
+    copy_artifact = jobdata.copy_artifact
   }
   def archive_artifact = ""
-  if (data.containsKey('archive_artifact'))
+  if (jobdata.containsKey('archive_artifact'))
   {
-    archive_artifact = data.archive_artifact
+    archive_artifact = jobdata.archive_artifact
   }
 
-  for (account in data.accounts)
+  for (curenv in jobdata.envs)
   {
-    job ("${account}_ansible_${data.category}_${data.target}")
+    for (account in jobdata.accounts)
     {
-      disabled(job_disabled)
-      label(data.jnknode)
-      logRotator(-1,20)
-
-      wrappers
+      job ("${account}_ansible_${curenv}_${jobdata.category}_${jobdata.target}")
       {
-        colorizeOutput('xterm')
-      }
+        disabled(job_disabled)
+        label(jobdata.jnknode)
+        logRotator(-1,20)
 
-      multiscm
-      {
-        // get data from the main repository
-        git
+        wrappers
         {
-          remote
-          {
-            url(git_base_repo_url)
-          }
-          branch('origin/' + git_branch)
-          extensions
-          {
-              relativeTargetDirectory("git_base_repo")
-          }
-        }
-        // get data from additional repository (to add extra files)
-        git
-        {
-          remote
-          {
-            url(git_extra_repo_url)
-          }
-          branch('origin/' + git_branch)
-          extensions
-          {
-              relativeTargetDirectory("git_extra_repo")
-          }
-        }
-      }
-
-      steps
-      {
-        environmentVariables
-        {
-          env('ACCOUNT', "${account}")
-          env('AWS_ACCESS_KEY_ID', "\${AWS_ACCESS_KEY}")
-          env('AWS_SECRET_ACCESS_KEY', "\${AWS_SECRET_KEY}")
-          env('TERM', "xterm")
-          env('ANSIBLE_FORCE_COLOR', 1)
-          env('ANSIBLE_SSH_ARGS', '')
-          env('PYTHONUNBUFFERED', 1)
-          propertiesFile("${profilespath}/aws-account-${account}.properties")
+          colorizeOutput('xterm')
         }
 
-        if (copy_artifact != "")
+        multiscm
         {
-          copyArtifacts("${account}_ansible_${copy_artifact.category}_${copy_artifact.target}")
+          // get data from the main repository
+          git
           {
-            includePatterns(copy_artifact.filepath)
-            targetDirectory('imported_artifacts')
-            flatten()
-            buildSelector
+            remote
             {
-                latestSuccessful(true)
+              url(git_base_repo_url)
+            }
+            branch('origin/' + git_branch)
+            extensions
+            {
+                relativeTargetDirectory("git_base_repo")
+            }
+          }
+          // get exta data from additional repository
+          git
+          {
+            remote
+            {
+              url(git_extra_repo_url)
+            }
+            branch('origin/' + git_branch)
+            extensions
+            {
+                relativeTargetDirectory("git_extra_repo")
             }
           }
         }
 
-        def ansible_inventory = "hosts-${account}"
-        def ansible_jobsvars = " -e account=${account} -e aws_region=\${AWS_REGION} "
-        def ansible_playbook = "playbook-generic-prod-${data.category}-${data.target}.yml"
-        def ansible_command = "ansible-playbook -i ${ansible_inventory} ${ansible_jobsvars} ${ansible_args_extra} ${ansible_playbook}"
-
-        shell("${script_initialization}\n${ansible_command}\n")
-      }
-
-      publishers
-      {
-        if (data.archive_artifact != "")
+        steps
         {
-          archiveArtifacts
+          environmentVariables
           {
-            pattern(data.archive_artifact)
-            fingerprint(true)
-            onlyIfSuccessful(true)
+            env('ACCOUNT', "${account}")
+            env('AWS_ACCESS_KEY_ID', "\${AWS_ACCESS_KEY}")
+            env('AWS_SECRET_ACCESS_KEY', "\${AWS_SECRET_KEY}")
+            env('TERM', "xterm")
+            env('ANSIBLE_FORCE_COLOR', 1)
+            env('ANSIBLE_SSH_ARGS', '')
+            env('PYTHONUNBUFFERED', 1)
+            propertiesFile("${profilespath}/aws-account-${account}.properties")
+          }
+
+          if (copy_artifact != "")
+          {
+            copyArtifacts("${account}_ansible_${copy_artifact.category}_${copy_artifact.target}")
+            {
+              includePatterns(copy_artifact.filepath)
+              targetDirectory('imported_artifacts')
+              flatten()
+              buildSelector
+              {
+                  latestSuccessful(true)
+              }
+            }
+          }
+
+          def ansible_inventory = "hosts-${account}"
+          def ansible_jobsvars = "-e account=${account} -e aws_region=\${AWS_REGION} -e env=${curenv}"
+          def ansible_playbook = "playbook-generic-${jobdata.category}-${jobdata.target}.yml"
+          def ansible_command = "ansible-playbook -i ${ansible_inventory} ${ansible_jobsvars} ${ansible_args_extra} ${ansible_playbook}"
+
+          shell("${script_initialization}\n${ansible_command}\n")
+        }
+
+        publishers
+        {
+          if (jobdata.archive_artifact != "")
+          {
+            archiveArtifacts
+            {
+              pattern(jobdata.archive_artifact)
+              fingerprint(true)
+              onlyIfSuccessful(true)
+            }
           }
         }
       }

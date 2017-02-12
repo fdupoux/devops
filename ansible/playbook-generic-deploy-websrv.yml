@@ -4,11 +4,11 @@
   roles:
     - role: generic-ami-deploy
       generic_ami_deploy_step: "generic-ami-deploy-prepare-vpc"
-      generic_ami_deploy_aws_region: "{{ lookup('env','AWS_REGION') }}"
+      generic_ami_deploy_aws_region: "{{ aws_region }}"
       generic_ami_deploy_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
       generic_ami_deploy_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
-      generic_ami_deploy_stack_cidrbase: "{{ ipcidr_websrv_prod }}"
-      generic_ami_deploy_envname: "prod"
+      generic_ami_deploy_stack_cidrbase: "{{ ipcidr_websrv }}"
+      generic_ami_deploy_envname: "{{ env }}"
 
 - name: Deploy an application AMI in a stack
   hosts: localhost
@@ -16,19 +16,19 @@
     - role: generic-ami-deploy
       generic_ami_deploy_step: "generic-ami-deploy-deploy-app"
       generic_ami_deploy_stateful: no
-      generic_ami_deploy_aws_region: "{{ lookup('env','AWS_REGION') }}"
+      generic_ami_deploy_aws_region: "{{ aws_region }}"
       generic_ami_deploy_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
       generic_ami_deploy_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
       generic_ami_deploy_application_ami_id: "{{ input_ami_id }}"
-      generic_ami_deploy_bootstrap_playbook: "playbook-generic-prod-config-websrv.yml"
-      generic_ami_deploy_ansible_host_group: "{{ lookup('env','ACCOUNT') }}-prod-ec2-websrv"
-      generic_ami_deploy_ansible_account: "{{ lookup('env','ACCOUNT') }}"
-      generic_ami_deploy_stack_cidrbase: "{{ ipcidr_websrv_prod }}"
+      generic_ami_deploy_bootstrap_playbook: "playbook-generic-config-websrv.yml"
+      generic_ami_deploy_ansible_host_group: "{{ account }}-{{ env }}-ec2-websrv"
+      generic_ami_deploy_ansible_account: "{{ account }}"
+      generic_ami_deploy_stack_cidrbase: "{{ ipcidr_websrv }}"
       generic_ami_deploy_associate_temp_eip: "true"
       generic_ami_deploy_ec2_keypair: "jenkins@zl-infras-p01"
       generic_ami_deploy_instance_profile: "role_ec2_node_websrv"
       generic_ami_deploy_sgrules: "{{ ec2_sg_common_rules + ec2_sgrules_websrv }}"
-      generic_ami_deploy_envname: "prod"
+      generic_ami_deploy_envname: "{{ env }}"
       generic_ami_deploy_appname: "websrv"
       generic_ami_deploy_ec2_type: "t2.micro"
       generic_ami_deploy_disksize: "10"

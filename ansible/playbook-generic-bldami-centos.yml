@@ -9,7 +9,7 @@
       centos_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
       centos_ami_builder_ec2_keypair: "jenkins@zl-infras-p01"
       centos_ami_builder_allowip: "0.0.0.0/0"
-      centos_ami_builder_stack_name: "{{ lookup('env','ACCOUNT') }}-stack-ami-builder-centos"
+      centos_ami_builder_stack_name: "{{ account }}-stack-ami-builder-centos"
       centos_ami_builder_username: "admin"
       centos_ami_builder_vgname: "vgmain"
       centos_ami_builder_disksize: "3"
