@@ -165,8 +165,9 @@ jobs.each
         }
 
         def ansible_inventory = "hosts-${account}"
+        def ansible_jobsvars = " -e account=${account} -e aws_region=\${AWS_REGION} "
         def ansible_playbook = "playbook-generic-prod-${data.category}-${data.target}.yml"
-        def ansible_command = "ansible-playbook -i ${ansible_inventory} ${ansible_args_extra} ${ansible_playbook}"
+        def ansible_command = "ansible-playbook -i ${ansible_inventory} ${ansible_jobsvars} ${ansible_args_extra} ${ansible_playbook}"
 
         shell("${script_initialization}\n${ansible_command}\n")
       }
