@@ -1,0 +1,68 @@
+---
+- name: Build temporary VPC where to run the AMI builder
+  hosts: localhost
+  roles:
+    - role: generic-ami-builder
+      generic_ami_builder_step: "generic-ami-builder-prepare-vpc"
+      generic_ami_builder_aws_region: "{{ lookup('env','AWS_REGION') }}"
+      generic_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
+      generic_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
+
+- name: Build temporary EC2 instance
+  hosts: localhost
+  roles:
+    - role: generic-ami-builder
+      generic_ami_builder_step: "generic-ami-builder-prepare-ec2"
+      generic_ami_builder_aws_region: "{{ lookup('env','AWS_REGION') }}"
+      generic_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
+      generic_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
+      generic_ami_builder_ec2_stack_name: 'stack-ami-builder-app-ec2-websrv'
+      generic_ami_builder_base_ami_id: "{{ input_ami_id }}"
+      generic_ami_builder_ec2_keypair: "jenkins@zl-infras-p01"
+      generic_ami_builder_allowip: "0.0.0.0/0"
+      generic_ami_builder_host_group: "{{ lookup('env','ACCOUNT') }}-prod-ec2"
+      generic_ami_builder_disksize: '5'
+
+- name: Execute ansible on the temporary EC2 instance
+  hosts: zl-amibld-d01.dupoux.int
+  remote_user: admin
+  become: yes
+  roles:
+    - role: main-websrv
+  post_tasks:
+    - meta: flush_handlers
+
+- name: Remove temporary files before the image is created
+  hosts: zl-amibld-d01.dupoux.int
+  remote_user: admin
+  become: yes
+  roles:
+    - role: generic-ami-builder
+      generic_ami_builder_step: "generic-ami-builder-tmpfiles"
+
+- name: Build AMI as an image of the temporary instance
+  hosts: localhost
+  roles:
+    - role: generic-ami-builder
+      generic_ami_builder_step: "generic-ami-builder-image"
+      generic_ami_builder_aws_region: "{{ lookup('env','AWS_REGION') }}"
+      generic_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
+      generic_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
+      generic_ami_builder_ec2_stack_name: 'stack-ami-builder-app-ec2-websrv'
+      generic_ami_builder_ami_name: "ami_centos7_websrv"
+      generic_ami_builder_ami_tags:
+        description: 'Custom CentOS-7 image configured as a web server'
+        ami_type: 'applications'
+        app_name: 'websrv'
+        os_name: 'centos'
+        os_majver: '7'
+
+- name: Cleanup temporary environment
+  hosts: localhost
+  roles:
+    - role: generic-ami-builder
+      generic_ami_builder_step: "generic-ami-builder-cleanup"
+      generic_ami_builder_aws_region: "{{ lookup('env','AWS_REGION') }}"
+      generic_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
+      generic_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
+      generic_ami_builder_ec2_stack_name: 'stack-ami-builder-app-ec2-websrv'
