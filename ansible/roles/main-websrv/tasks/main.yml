@@ -1,0 +1,5 @@
+---
+- include: installation.yml
+  tags: ['main-websrv','installation','main-websrv-installation']
+- include: configuration.yml
+  tags: ['main-websrv','configuration','main-websrv-configuration']
