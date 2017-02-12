@@ -1,0 +1,44 @@
+---
+- name: Make sure the essential parameters have been provided to this role
+  assert:
+    that:
+      - 'generic_ami_deploy_envname|default("") != ""'
+      - 'generic_ami_deploy_stack_cidrbase|default("") != ""'
+
+- set_fact:
+    vpc_stack_name: "stack-app-{{ generic_ami_deploy_envname }}-vpc"
+
+- name: Create or update stack with persistent VPC where to launch the application instance
+  cloudformation:
+    aws_access_key: "{{ generic_ami_deploy_aws_access_key | default('') }}"
+    aws_secret_key: "{{ generic_ami_deploy_aws_secret_key | default('') }}"
+    stack_name: "{{ vpc_stack_name }}"
+    state: "present"
+    region: "{{ generic_ami_deploy_aws_region }}"
+    template: "{{ role_path }}/files/01-application-vpc.json"
+    template_parameters:
+      StackName: "{{ vpc_stack_name }}"
+      AwsRegion: "{{ generic_ami_deploy_aws_region }}"
+      CidrBase: "{{ generic_ami_deploy_stack_cidrbase }}"
+  register: stack_vpc_data
+
+- set_fact:
+    generic_ami_deploy_vpc_id: '{{ stack_vpc_data.stack_outputs.VpcId }}'
+    generic_ami_deploy_private_subnet_id_zonea: '{{ stack_vpc_data.stack_outputs.SubnetPrivateA }}'
+    generic_ami_deploy_private_subnet_id_zoneb: '{{ stack_vpc_data.stack_outputs.SubnetPrivateB }}'
+    generic_ami_deploy_private_subnet_id_zonec: '{{ stack_vpc_data.stack_outputs.SubnetPrivateC }}'
+    generic_ami_deploy_public_subnet_id_zonea: '{{ stack_vpc_data.stack_outputs.SubnetPublicA }}'
+    generic_ami_deploy_public_subnet_id_zoneb: '{{ stack_vpc_data.stack_outputs.SubnetPublicB }}'
+    generic_ami_deploy_public_subnet_id_zonec: '{{ stack_vpc_data.stack_outputs.SubnetPublicC }}'
+
+- name: Show ID of the application VPC created by cloudformation
+  debug: msg="The ID of the application VPC is {{ generic_ami_deploy_vpc_id }}"
+
+- name: Show ID of the application PrivateSubnetIdA created by cloudformation
+  debug: msg="The ID of the application PrivateSubnetIdA is {{ generic_ami_deploy_private_subnet_id_zonea }}"
+
+- name: Show ID of the application PrivateSubnetIdB created by cloudformation
+  debug: msg="The ID of the application PrivateSubnetIdB is {{ generic_ami_deploy_private_subnet_id_zoneb }}"
+
+- name: Show ID of the application PrivateSubnetIdC created by cloudformation
+  debug: msg="The ID of the application PrivateSubnetIdC is {{ generic_ami_deploy_private_subnet_id_zonec }}"

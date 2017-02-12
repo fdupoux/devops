@@ -1,0 +1,101 @@
+---
+- name: Make sure the essential parameters have been provided to this role
+  assert:
+    that:
+      - 'generic_ami_deploy_application_ami_id|default("") != ""'
+      - 'generic_ami_deploy_bootstrap_playbook|default("") != ""'
+      - 'generic_ami_deploy_ansible_host_group|default("") != ""'
+      - 'generic_ami_deploy_ansible_account|default("") != ""'
+      - 'generic_ami_deploy_stack_cidrbase|default("") != ""'
+      - 'generic_ami_deploy_instance_profile|default("") != ""'
+      - 'generic_ami_deploy_appname|default("") != ""'
+      - 'generic_ami_deploy_envname|default("") != ""'
+      - 'generic_ami_deploy_sgrules|default([]) != []'
+
+- set_fact:
+    app_stack_name: "stack-app-{{ generic_ami_deploy_envname }}-{{ generic_ami_deploy_appname }}"
+
+- name: Create or update security-group
+  ec2_group:
+    aws_access_key: "{{ generic_ami_deploy_aws_access_key | default('') }}"
+    aws_secret_key: "{{ generic_ami_deploy_aws_secret_key | default('') }}"
+    region: "{{ generic_ami_deploy_aws_region }}"
+    name: "{{ app_stack_name }}"
+    description: "Security-group for {{ app_stack_name }}"
+    vpc_id: "{{ generic_ami_deploy_vpc_id }}"
+    rules: "{{ generic_ami_deploy_sgrules }}"
+  register: sgresults
+
+- name: Deploy application image using an ASG if this is a stateless instance
+  cloudformation:
+    aws_access_key: "{{ generic_ami_deploy_aws_access_key | default('') }}"
+    aws_secret_key: "{{ generic_ami_deploy_aws_secret_key | default('') }}"
+    stack_name: "{{ app_stack_name }}"
+    state: "present"
+    region: "{{ generic_ami_deploy_aws_region }}"
+    template: "{{ role_path }}/files/02-application-stateless.json"
+    template_parameters:
+      VpcId: "{{ generic_ami_deploy_vpc_id }}"
+      AwsRegion: "{{ generic_ami_deploy_aws_region }}"
+      StackName: "{{ app_stack_name }}"
+      CidrBase: "{{ generic_ami_deploy_stack_cidrbase }}"
+      AssociateTempEip: "{{ generic_ami_deploy_associate_temp_eip }}"
+      SecurityGroupId: "{{ sgresults.group_id }}"
+      SubnetPrivateA: "{{ generic_ami_deploy_private_subnet_id_zonea }}"
+      SubnetPublicA: "{{ generic_ami_deploy_public_subnet_id_zonea }}"
+      SubnetPrivateB: "{{ generic_ami_deploy_private_subnet_id_zoneb }}"
+      SubnetPublicB: "{{ generic_ami_deploy_public_subnet_id_zoneb }}"
+      SubnetPrivateC: "{{ generic_ami_deploy_private_subnet_id_zonec }}"
+      SubnetPublicC: "{{ generic_ami_deploy_public_subnet_id_zonec }}"
+      InstanceType: "{{ generic_ami_deploy_ec2_type }}"
+      InstanceProfile: "{{ generic_ami_deploy_instance_profile }}"
+      KeyName: "{{ generic_ami_deploy_ec2_keypair }}"
+      ApplicationAmi: "{{ generic_ami_deploy_application_ami_id }}"
+      BoostrapPlaybook: "{{ generic_ami_deploy_bootstrap_playbook }}"
+      AnsibleHostGroup: "{{ generic_ami_deploy_ansible_host_group }}"
+      AnsibleAccount: "{{ generic_ami_deploy_ansible_account }}"
+      DiskSizeGb: "{{ generic_ami_deploy_disksize }}"
+      DiskType: "{{ generic_ami_deploy_disktype }}"
+  register: stack_app_data
+  when: '{{ generic_ami_deploy_stateful | bool }} == false'
+
+- name: Show output provided by cloudformation
+  debug: var=stack_app_data1
+  when: '{{ generic_ami_deploy_stateful | bool }} == false'
+
+- name: Deploy application image using an EC2 instance if this is a stateful
+  cloudformation:
+    aws_access_key: "{{ generic_ami_deploy_aws_access_key | default('') }}"
+    aws_secret_key: "{{ generic_ami_deploy_aws_secret_key | default('') }}"
+    stack_name: "{{ app_stack_name }}"
+    state: "present"
+    region: "{{ generic_ami_deploy_aws_region }}"
+    template: "{{ role_path }}/files/02-application-stateful.json"
+    template_parameters:
+      VpcId: "{{ generic_ami_deploy_vpc_id }}"
+      AwsRegion: "{{ generic_ami_deploy_aws_region }}"
+      StackName: "{{ app_stack_name }}"
+      CidrBase: "{{ generic_ami_deploy_stack_cidrbase }}"
+      AssociateTempEip: "{{ generic_ami_deploy_associate_temp_eip }}"
+      SecurityGroupId: "{{ sgresults.group_id }}"
+      SubnetPrivateA: "{{ generic_ami_deploy_private_subnet_id_zonea }}"
+      SubnetPublicA: "{{ generic_ami_deploy_public_subnet_id_zonea }}"
+      SubnetPrivateB: "{{ generic_ami_deploy_private_subnet_id_zoneb }}"
+      SubnetPublicB: "{{ generic_ami_deploy_public_subnet_id_zoneb }}"
+      SubnetPrivateC: "{{ generic_ami_deploy_private_subnet_id_zonec }}"
+      SubnetPublicC: "{{ generic_ami_deploy_public_subnet_id_zonec }}"
+      InstanceType: "{{ generic_ami_deploy_ec2_type }}"
+      InstanceProfile: "{{ generic_ami_deploy_instance_profile }}"
+      KeyName: "{{ generic_ami_deploy_ec2_keypair }}"
+      ApplicationAmi: "{{ generic_ami_deploy_application_ami_id }}"
+      BoostrapPlaybook: "{{ generic_ami_deploy_bootstrap_playbook }}"
+      AnsibleHostGroup: "{{ generic_ami_deploy_ansible_host_group }}"
+      AnsibleAccount: "{{ generic_ami_deploy_ansible_account }}"
+      DiskSizeGb: "{{ generic_ami_deploy_disksize }}"
+      DiskType: "{{ generic_ami_deploy_disktype }}"
+  register: stack_app_data2
+  when: '{{ generic_ami_deploy_stateful | bool }} == true'
+
+- name: Show output provided by cloudformation
+  debug: var=stack_app_data2
+  when: '{{ generic_ami_deploy_stateful | bool }} == true'

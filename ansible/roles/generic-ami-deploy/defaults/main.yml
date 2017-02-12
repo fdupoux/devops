@@ -1,0 +1,34 @@
+---
+# Users may want to override the following parameters
+generic_ami_deploy_aws_region: "{{ lookup('env','AWS_REGION') }}"
+generic_ami_deploy_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
+generic_ami_deploy_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
+
+# Users should define the following parameters:
+generic_ami_deploy_ec2_keypair: ""
+generic_ami_deploy_instance_profile: ""
+generic_ami_deploy_application_ami_id: ""
+generic_ami_deploy_ansible_host_group: ""
+generic_ami_deploy_ansible_account: ""
+generic_ami_deploy_stack_cidrbase: ""
+generic_ami_deploy_appname: ""
+generic_ami_deploy_envname: ""
+
+# Disk specs
+generic_ami_deploy_disksize: "5"
+generic_ami_deploy_disktype: "gp2"
+
+# EC2 instance type of the temporary instance used to build the new AMI
+generic_ami_deploy_ec2_type: "t2.nano"
+
+# Which ansible playbook to use to configure the instance during bootstrap process
+generic_ami_deploy_bootstrap_playbook: ""
+
+# Is it a stateful application such as a database or not
+generic_ami_deploy_stateful: no
+
+# Should a temporary EIP be associated with the instance
+generic_ami_deploy_associate_temp_eip: "true"
+
+# List of rules to put in the security group
+generic_ami_deploy_sgrules: "{{ ec2_sg_common_rules }}"

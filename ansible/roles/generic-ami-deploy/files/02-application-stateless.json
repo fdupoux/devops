@@ -1,0 +1,198 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "AWS CloudFormation Template for creating an ASG for stateless applications",
+
+  "Parameters": {
+    "StackName": {
+      "Description" : "Name of the stack",
+      "Type" : "String"
+    },
+
+    "InstanceType": {
+      "Description": "Type of the application EC2 instances",
+      "Type": "String",
+      "Default": "t2.micro",
+      "AllowedValues": ["t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large"],
+      "ConstraintDescription": "Must be a valid EC2 instance type"
+    },
+
+    "InstanceProfile": {
+      "Description": "IAM Profile to use for the EC2 instances",
+      "Type": "String",
+      "ConstraintDescription": "Must be the name of an existing IAM Profile"
+    },
+
+    "BoostrapPlaybook": {
+      "Description" : "Name of the ansible playbook file to use during bootstrapping process",
+      "Type" : "String"
+    },
+
+    "AnsibleAccount": {
+      "Description" : "Account in which ansible will be run",
+      "AllowedValues": ["business", "personal"],
+      "Type" : "String"
+    },
+
+    "AnsibleHostGroup": {
+      "Description" : "Most specific ansible host group to which these nodes must belong",
+      "Type" : "String"
+    },
+
+    "VpcId": {
+      "Description" : "ID of the VPC where to create the EC2 instance",
+      "Type" : "AWS::EC2::VPC::Id"
+    },
+
+    "AwsRegion": {
+      "Description" : "Region where to create the resources",
+      "Type" : "String"
+    },
+
+    "SubnetPrivateA": {
+			"Description": "ID of the Private Subnet A",
+			"Type": "AWS::EC2::Subnet::Id"
+		},
+
+    "SubnetPublicA": {
+			"Description": "ID of the Public Subnet A",
+			"Type": "AWS::EC2::Subnet::Id"
+		},
+
+		"SubnetPrivateB": {
+			"Description": "ID of the Private Subnet B",
+			"Type": "AWS::EC2::Subnet::Id"
+		},
+
+    "SubnetPublicB": {
+			"Description": "ID of the Public Subnet B",
+			"Type": "AWS::EC2::Subnet::Id"
+		},
+
+		"SubnetPrivateC": {
+			"Description": "ID of the Private Subnet C",
+			"Type": "AWS::EC2::Subnet::Id"
+		},
+
+		"SubnetPublicC": {
+			"Description": "ID of the Public Subnet C",
+			"Type": "AWS::EC2::Subnet::Id"
+		},
+
+    "KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription" : "must be the name of an existing EC2 KeyPair."
+    },
+
+    "ApplicationAmi": {
+      "Description" : "ID of the application AMI to use to build the application instances",
+      "Type" : "String"
+    },
+
+    "DiskSizeGb": {
+      "Description" : "Total size in GB of the root EBS volume for new instances",
+      "Type" : "Number"
+    },
+
+    "DiskType": {
+      "Description" : "Type of the EBS volume",
+      "AllowedValues" : ["standard", "io1", "gp2"],
+      "Type" : "String"
+    },
+
+    "AssociateTempEip": {
+      "Description": "Set to true if the instance should get a random EIP associated",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": ["true", "false"],
+      "ConstraintDescription": "Must be a valid boolean"
+    },
+
+    "SecurityGroupId": {
+      "Description": "ID of the security group to use for the EC2 instances",
+      "Type": "String"
+    },
+
+    "CidrBase": {
+      "Description" : "First two numbers in the IP range allocated to this stack (eg: '10.88')",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})",
+      "Type" : "String"
+    }
+
+  },
+
+  "Resources": {
+    "AppServerGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "CreationPolicy" : {
+        "ResourceSignal" : {
+          "Timeout" : "PT9M",
+          "Count"   : "1"
+        }
+      },
+      "UpdatePolicy" : {
+        "AutoScalingRollingUpdate" : {
+          "MaxBatchSize" : "1",
+          "MinInstancesInService" : "1",
+          "PauseTime" : "PT9M",
+          "WaitOnResourceSignals": "true"
+        }
+      },
+      "Properties": {
+        "LaunchConfigurationName": { "Ref": "LaunchConfig" },
+        "VPCZoneIdentifier": [ { "Ref": "SubnetPublicA" } ],
+        "AvailabilityZones" : [{ "Fn::Join": [ "", [ { "Ref": "AwsRegion" }, "a" ] ] }],
+        "Tags" : [
+          { "Key" : "Name", "Value" : { "Ref": "StackName" }, "PropagateAtLaunch" : "true" },
+          { "Key" : "ansible_host_group", "Value" : { "Ref": "AnsibleHostGroup" }, "PropagateAtLaunch" : "true" }
+        ],
+        "MinSize": "1",
+        "MaxSize": "2"
+      }
+    },
+
+    "LaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "KeyName": { "Ref": "KeyName" },
+        "ImageId": { "Ref" : "ApplicationAmi" },
+        "SecurityGroups": [ { "Ref": "SecurityGroupId" } ],
+        "IamInstanceProfile" : { "Ref": "InstanceProfile" },
+        "InstanceType": { "Ref": "InstanceType" },
+        "AssociatePublicIpAddress": { "Ref": "AssociateTempEip" },
+        "BlockDeviceMappings" : [
+           {
+              "DeviceName" : "/dev/sda1",
+              "Ebs" : {
+                "VolumeSize" : { "Ref" : "DiskSizeGb" },
+                "VolumeType" : { "Ref" : "DiskType" },
+                "DeleteOnTermination" : "true"
+              }
+           }
+        ],
+        "UserData": { "Fn::Base64" : { "Fn::Join" : ["", [
+             "#!/bin/bash -x\n",
+             "logger -t 'UserData-shell-script' -- $0 starting ...\n",
+             "WRAPPER_SCRIPT='/usr/local/bin/bootstrap-wrapper.sh'\n",
+             "touch ${WRAPPER_SCRIPT}\n",
+             "echo export BOOTSTRAP_PLAYBOOK=", { "Ref" : "BoostrapPlaybook" }, " >> ${WRAPPER_SCRIPT}\n",
+             "echo export ANSIBLE_ACCOUNT=", { "Ref" : "AnsibleAccount" }, " >> ${WRAPPER_SCRIPT}\n",
+             "echo export AWS_REGION=", { "Ref" : "AwsRegion" }, " >> ${WRAPPER_SCRIPT}\n",
+             "echo export STACK_NAME=", { "Ref" : "StackName" }, " >> ${WRAPPER_SCRIPT}\n",
+             "echo export SIGNAL_RESOURCE=AppServerGroup >> ${WRAPPER_SCRIPT}\n",
+             "echo /bin/bash -x /usr/local/bin/bootstrap.sh >> ${WRAPPER_SCRIPT}\n",
+             "/bin/bash ${WRAPPER_SCRIPT} 2>&1 > /var/log/bootstrap-wrapper.log\n"
+        ]]}}
+      }
+    }
+
+  },
+
+  "Outputs": {
+    "Output1": {
+      "Description": "Description 1",
+      "Value": "Dummy value 1"
+    }
+  }
+}
