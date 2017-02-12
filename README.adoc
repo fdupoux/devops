@@ -1,0 +1,34 @@
+DevOps repository
+=================
+
+This repository contains all my DevOps related code. This code creates Jenkins
+jobs which then run Ansible to build servers using a pipeline with multiple
+stages following the immutable infrastructure principles.
+
+== Jenkins
+The jenkins directory contains groovy files which are executed through the
+https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins-DSL] in order
+to crate and update the configuration of all Jenkins jobs from code so these
+jobs can never be lost and so we can track all changes easily. All sensitive
+information is excluded from this repository and will be loaded by Jenkins from
+properties files.
+
+== Ansible
+The ansible directory contains many roles to build AMI images, EC2 environments
+using CloudFormation, and manage EC2 instances. All sensitive information such
+as AWS Access Keys is excluded from this repository and will be passed by the
+Jenkins jobs as environmnet variables or loaded from group_vars variables which
+are stored in a private repository.
+
+== Workflow
+This DevOps code implements the following jobs:
+
+ * *ansible_bldami_centos* builds a minimal AMI image of CentOS 7.x from scratch
+ * *ansible_bldami_websrv* builds derives the minimal AMI and adds application
+  specific packages related to a web server
+* *ansible_deploy_websrv* deploys the latest websrv application AMI into an
+  Auto-Scaling Group in AWS using Cloud-Formations
+* *ansible_config_websrv* allows to apply the latest changes to an existing EC2
+  server using ansible but this job should normally not be used as new versions
+  of AMIs should be created and deployed. This job can help save time during the
+  development.
