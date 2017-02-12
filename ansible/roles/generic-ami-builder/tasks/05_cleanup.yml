@@ -1,0 +1,18 @@
+---
+- name: Destroy temporary stack with the EC2 instance to stop charges
+  cloudformation:
+    aws_access_key: "{{ generic_ami_builder_aws_access_key | default('') }}"
+    aws_secret_key: "{{ generic_ami_builder_aws_secret_key | default('') }}"
+    region: "{{ generic_ami_builder_aws_region }}"
+    stack_name: "{{ generic_ami_builder_ec2_stack_name }}"
+    state: "absent"
+  when: '{{ generic_ami_builder_delete_ec2_stack | bool }} == true'
+
+- name: Destroy temporary stack with the VPC
+  cloudformation:
+    aws_access_key: "{{ generic_ami_builder_aws_access_key | default('') }}"
+    aws_secret_key: "{{ generic_ami_builder_aws_secret_key | default('') }}"
+    region: "{{ generic_ami_builder_aws_region }}"
+    stack_name: "{{ generic_ami_builder_vpc_stack_name }}"
+    state: "absent"
+  when: '{{ generic_ami_builder_delete_vpc_stack | bool }} == true'

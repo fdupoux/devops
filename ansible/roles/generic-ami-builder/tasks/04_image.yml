@@ -1,0 +1,45 @@
+---
+- name: Stop the temporary instance
+  ec2:
+    aws_access_key: "{{ generic_ami_builder_aws_access_key | default('') }}"
+    aws_secret_key: "{{ generic_ami_builder_aws_secret_key | default('') }}"
+    region: "{{ generic_ami_builder_aws_region }}"
+    instance_id: "{{ generic_ami_builder_ec2_instance_id }}"
+    state: stopped
+    wait: True
+  when: '{{ generic_ami_builder_delete_ec2_stack | bool }} == true'
+
+- name: Determine full name of the new AMI
+  set_fact:
+    generic_ami_builder_ami_fullname: "{{ generic_ami_builder_ami_name }}_{{ timestamp }}"
+
+- name: Determine default tags of the new AMI
+  set_fact:
+    generic_ami_builder_ami_deftags:
+      Name: "{{ generic_ami_builder_ami_fullname }}"
+      ctime: "{{ timestamp }}"
+
+- name: Create AMI from the temporary instance
+  ec2_ami:
+    aws_access_key: "{{ generic_ami_builder_aws_access_key | default('') }}"
+    aws_secret_key: "{{ generic_ami_builder_aws_secret_key | default('') }}"
+    region: "{{ generic_ami_builder_aws_region }}"
+    instance_id: "{{ generic_ami_builder_ec2_instance_id }}"
+    name: "{{ generic_ami_builder_ami_fullname }}"
+    tags: "{{ generic_ami_builder_ami_deftags | combine(generic_ami_builder_ami_tags) }}"
+    wait: yes
+    device_mapping:
+      - device_name: "/dev/sda1"
+        size: "{{ generic_ami_builder_disksize }}"
+        volume_type: "{{ generic_ami_builder_disktype }}"
+        delete_on_termination: true
+  register: myami
+
+- name: Show resulting AMI
+  debug: msg="AMI has been created with ID {{ myami.image_id }}"
+
+- name: Save ID of the new AMI to a local file so it can be used as an artifact
+  local_action: copy
+  args:
+    content: "{{ myami.image_id }}"
+    dest: "{{ role_path }}/target/ami_id.txt"

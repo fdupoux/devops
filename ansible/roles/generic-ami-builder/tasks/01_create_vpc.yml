@@ -1,0 +1,24 @@
+---
+- name: Create stack with disposable VPC where to build the AMI
+  cloudformation:
+    aws_access_key: "{{ generic_ami_builder_aws_access_key | default('') }}"
+    aws_secret_key: "{{ generic_ami_builder_aws_secret_key | default('') }}"
+    stack_name: "{{ generic_ami_builder_vpc_stack_name }}"
+    state: "present"
+    region: "{{ generic_ami_builder_aws_region }}"
+    template: "{{ role_path }}/files/temp-vpc.json"
+    template_parameters:
+      StackName: "{{ generic_ami_builder_vpc_stack_name }}"
+      AwsRegion: "{{ generic_ami_builder_aws_region }}"
+      CidrBase: "{{ generic_ami_builder_stack_cidrbase }}"
+  register: stack_vpc_data
+
+- set_fact:
+    generic_ami_builder_vpc_id: '{{ stack_vpc_data.stack_outputs.VpcId }}'
+    generic_ami_builder_subnet_id: '{{ stack_vpc_data.stack_outputs.SubnetId }}'
+
+- name: Show ID of the VPC created by cloudformation
+  debug: msg="The ID of the temporary VPC is {{ generic_ami_builder_vpc_id }}"
+
+- name: Show ID of the subnet created by cloudformation
+  debug: msg="The ID of the temporary VPC is {{ generic_ami_builder_subnet_id }}"

@@ -1,0 +1,56 @@
+---
+- name: Make sure the essential parameters have been provided to this role
+  assert:
+    that:
+      - 'generic_ami_builder_base_ami_id|default("") != ""'
+
+- name: Create stack with disposable EC2 instance
+  cloudformation:
+    aws_access_key: "{{ generic_ami_builder_aws_access_key | default('') }}"
+    aws_secret_key: "{{ generic_ami_builder_aws_secret_key | default('') }}"
+    stack_name: "{{ generic_ami_builder_ec2_stack_name }}"
+    state: "present"
+    region: "{{ generic_ami_builder_aws_region }}"
+    template: "{{ role_path }}/files/temp-ec2.json"
+    template_parameters:
+      StackName: "{{ generic_ami_builder_ec2_stack_name }}"
+      VpcId: "{{ generic_ami_builder_vpc_id }}"
+      SubnetId: "{{ generic_ami_builder_subnet_id }}"
+      InstanceType: "{{ generic_ami_builder_ec2_type }}"
+      AwsRegion: "{{ generic_ami_builder_aws_region }}"
+      KeyName: "{{ generic_ami_builder_ec2_keypair }}"
+      BaseAmi: "{{ generic_ami_builder_base_ami_id }}"
+      DiskSizeGb: "{{ generic_ami_builder_disksize }}"
+      DiskType: "{{ generic_ami_builder_disktype }}"
+      SSHLocation: "{{ generic_ami_builder_allowip }}"
+  register: stack_ec2_data
+
+- name: Wait for the temporary EC2 instance to be ready
+  wait_for:
+    delay: 3
+    host: "{{ stack_ec2_data.stack_outputs.Ec2PublicIpAddr }}"
+    port: 22
+    search_regex: OpenSSH
+    timeout: 180
+
+- set_fact:
+    timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
+    generic_ami_builder_ec2_public_addr: '{{ stack_ec2_data.stack_outputs.Ec2PublicIpAddr }}'
+    generic_ami_builder_ec2_instance_id: '{{ stack_ec2_data.stack_outputs.Ec2InstanceId }}'
+
+- debug: msg="generic_ami_builder_host_group={{ generic_ami_builder_host_group }}"
+
+- name: Add temporary EC2 instance to inventory and a host group
+  add_host:
+    ansible_connection: ssh
+    ansible_ssh_host: "{{ generic_ami_builder_ec2_public_addr }}"
+    ansible_ssh_user: "admin"
+    hostname: "zl-amibld-d01.dupoux.int"
+    name: "zl-amibld-d01.dupoux.int"
+    groups: "{{ generic_ami_builder_host_group }}"
+
+- name: Show EIP of EC2 instance created by cloudformation
+  debug: msg="The EIP of the temporary instance is {{ generic_ami_builder_ec2_public_addr }}"
+
+- name: Show ID of EC2 instance created by cloudformation
+  debug: msg="The ID of the temporary instance is {{ generic_ami_builder_ec2_instance_id }}"

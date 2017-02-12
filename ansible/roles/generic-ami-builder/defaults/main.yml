@@ -1,0 +1,37 @@
+---
+# Users may want to override the following parameters
+generic_ami_builder_aws_region: "{{ lookup('env','AWS_REGION') }}"
+generic_ami_builder_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
+generic_ami_builder_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
+
+# Users should define the following parameters:
+generic_ami_builder_ec2_keypair: ""
+generic_ami_builder_base_ami_id: ""
+
+# Disk specs
+generic_ami_builder_disksize: "4"
+generic_ami_builder_disktype: "gp2"
+
+# EC2 instance type of the temporary instance used to build the new AMI
+generic_ami_builder_ec2_type: "t2.nano"
+
+# Which name and tags to set on the new AMI
+generic_ami_builder_ami_name: "ami_centos7_application"
+generic_ami_builder_ami_tags: {}
+
+# Range of addresses which are authorised to connect to the temporary instance (eg: "${your_home_ip}/32")
+generic_ami_builder_allowip: "0.0.0.0/0"
+
+# Users should not have to override the following parameters
+generic_ami_builder_vpc_stack_name: "stack-ami-builder-app-vpc"
+generic_ami_builder_ec2_stack_name: "stack-ami-builder-app-ec2"
+generic_ami_builder_stack_cidrbase: "10.88"
+
+# Option to disable during development to execute many runs on the same instance
+generic_ami_builder_delete_ec2_stack: yes
+
+# Do not destroy the stack with the VPC to make the process quicker the next time
+generic_ami_builder_delete_vpc_stack: no
+
+# Add temporary EC2 instance to ansible group to be able to use group_vars
+generic_ami_builder_host_group: "dummy_host_group"

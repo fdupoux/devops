@@ -1,0 +1,101 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "AWS CloudFormation Template to create a temporary VPC",
+
+  "Parameters" : {
+
+    "StackName": {
+      "Description" : "Name of the stack",
+      "Type" : "String"
+    },
+
+    "AwsRegion": {
+      "Description" : "Region where to create the resources",
+      "Type" : "String"
+    },
+
+    "CidrBase": {
+      "Description" : "First two numbers in the IP range allocated to this stack (eg: '10.88')",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})",
+      "Type" : "String"
+    }
+
+  },
+
+  "Resources" : {
+
+    "VPC" : {
+      "Type" : "AWS::EC2::VPC",
+      "Properties" : {
+        "CidrBlock" : { "Fn::Join" : [ ".", [ { "Ref": "CidrBase" }, "0.0/16" ] ] },
+        "Tags" : [ {"Key" : "Name", "Value" : { "Ref" : "StackName"} } ]
+      }
+    },
+
+    "Subnet" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::Join" : [ ".", [ { "Ref": "CidrBase" }, "1.0/24" ] ] },
+        "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
+      }
+    },
+
+    "InternetGateway" : {
+      "Type" : "AWS::EC2::InternetGateway",
+      "Properties" : {
+        "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
+      }
+    },
+
+    "AttachGateway" : {
+       "Type" : "AWS::EC2::VPCGatewayAttachment",
+       "Properties" : {
+         "VpcId" : { "Ref" : "VPC" },
+         "InternetGatewayId" : { "Ref" : "InternetGateway" }
+       }
+    },
+
+    "RouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : {"Ref" : "VPC"},
+        "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
+      }
+    },
+
+    "Route" : {
+      "Type" : "AWS::EC2::Route",
+      "DependsOn" : "AttachGateway",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "RouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "SubnetRouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "Subnet" },
+        "RouteTableId" : { "Ref" : "RouteTable" }
+      }
+    }
+
+  },
+
+  "Outputs" : {
+    
+    "VpcId": {
+      "Description": "The VPC ID",
+      "Value": { "Ref": "VPC" }
+    },
+
+    "SubnetId": {
+      "Description": "The Subnet ID in the VPC",
+      "Value": { "Ref": "Subnet" }
+    }
+
+  }
+}

@@ -1,0 +1,16 @@
+---
+- include: 01_create_vpc.yml
+  tags: ['installation','generic-ami-builder','generic-ami-builder-prepare-vpc']
+  when: generic_ami_builder_step == 'generic-ami-builder-prepare-vpc'
+- include: 02_create_ec2.yml
+  tags: ['installation','generic-ami-builder','generic-ami-builder-prepare-ec2']
+  when: generic_ami_builder_step == 'generic-ami-builder-prepare-ec2'
+- include: 03_tmpfiles.yml
+  tags: ['installation','generic-ami-builder','generic-ami-builder-tmpfiles']
+  when: generic_ami_builder_step == 'generic-ami-builder-tmpfiles'
+- include: 04_image.yml
+  tags: ['installation','generic-ami-builder','generic-ami-builder-image']
+  when: generic_ami_builder_step == 'generic-ami-builder-image'
+- include: 05_cleanup.yml
+  tags: ['installation','generic-ami-builder','generic-ami-builder-cleanup']
+  when: generic_ami_builder_step == 'generic-ami-builder-cleanup'
