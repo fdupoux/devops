@@ -7,7 +7,7 @@
       generic_ami_deploy_aws_region: "{{ aws_region }}"
       generic_ami_deploy_aws_access_key: "{{ lookup('env','AWS_ACCESS_KEY') }}"
       generic_ami_deploy_aws_secret_key: "{{ lookup('env','AWS_SECRET_KEY') }}"
-      generic_ami_deploy_stack_cidrbase: "{{ ipcidr_websrv }}"
+      generic_ami_deploy_stack_cidrbase: "{{ ipcidr_websrv[env] }}"
       generic_ami_deploy_envname: "{{ env }}"
 
 - name: Deploy an application AMI in a stack
@@ -23,7 +23,7 @@
       generic_ami_deploy_bootstrap_playbook: "playbook-generic-config-websrv.yml"
       generic_ami_deploy_ansible_host_group: "{{ account }}-{{ env }}-ec2-websrv"
       generic_ami_deploy_ansible_account: "{{ account }}"
-      generic_ami_deploy_stack_cidrbase: "{{ ipcidr_websrv }}"
+      generic_ami_deploy_stack_cidrbase: "{{ ipcidr_websrv[env] }}"
       generic_ami_deploy_associate_temp_eip: "true"
       generic_ami_deploy_ec2_keypair: "jenkins@zl-infras-p01"
       generic_ami_deploy_instance_profile: "role_ec2_node_websrv"
