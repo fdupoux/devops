@@ -23,12 +23,12 @@ are stored in a private repository.
 == Workflow
 This DevOps code implements the following jobs:
 
- * *ansible_bldami_centos* builds a minimal AMI image of CentOS 7.x from scratch
- * *ansible_bldami_websrv* builds derives the minimal AMI and adds application
-  specific packages related to a web server
+* *ansible_bldami_centos* builds a minimal AMI image of CentOS 7.x from scratch
+* *ansible_bldami_websrv* derives the minimal AMI and builds an application AMI
+  which contains specific packages required on a web server
 * *ansible_deploy_websrv* deploys the latest websrv application AMI into an
-  Auto-Scaling Group in AWS using Cloud-Formations
+  Auto-Scaling Group in AWS using the Cloud-Formation module in Ansible
 * *ansible_config_websrv* allows to apply the latest changes to an existing EC2
-  server using ansible but this job should normally not be used as new versions
-  of AMIs should be created and deployed. This job can help save time during the
-  development.
+  server using Ansible but this job should normally not be used as new versions
+  of AMIs should be created and deployed instead. This job can help save time
+  during the development.
