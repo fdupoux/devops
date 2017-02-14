@@ -172,6 +172,10 @@ for (jobdata in jobs)
             }
 
             def ansible_inventory = "hosts-${account}"
+            if (jobdata.containsKey('inventory'))
+            {
+              ansible_inventory = jobdata.inventory
+            }
             def ansible_jobsvars = "-e account=${account} -e aws_region=\${AWS_REGION} -e env=${curenv}"
             def ansible_playbook = "playbook-generic-${jobdata.category}-${target}.yml"
             def ansible_command = "ansible-playbook -i ${ansible_inventory} ${ansible_jobsvars} ${ansible_args_extra} ${ansible_playbook}"
@@ -181,11 +185,11 @@ for (jobdata in jobs)
 
           publishers
           {
-            if (jobdata.archive_artifact != "")
+            if (archive_artifact != "")
             {
               archiveArtifacts
               {
-                pattern(jobdata.archive_artifact)
+                pattern(archive_artifact)
                 fingerprint(true)
                 onlyIfSuccessful(true)
               }
