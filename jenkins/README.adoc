@@ -4,3 +4,19 @@ README for Jenkins directory
 This directory contains Jenkins DSL code which allows to create and maintain
 all Jenkins Jobs configuration as Groovy code using the
 https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins DSL plugin]
+
+The ansible.groovy script will create all Jenkins jobs defined in arrays. These
+arrays provide jobs attributes. These arrays are defined in account specific
+groovy files located in the same directory as the main ansible.groovy script. It
+allows to maintain separate jobs definitions for separate AWS accounts which all
+have Jenkins jobs following the same definition scheme. Here is an example with
+three AWS Accounts:
+
+* testacnt.groovy
+* client01.groovy
+* client02.groovy
+
+Then the sensitive AWS Access keys for each AWS accounts will be located in
+the following files: "${profilespath}/aws-account-${account}.properties". These
+files will be loaded by Jenkins at the time of the execution and ansible will
+use these environment variables.

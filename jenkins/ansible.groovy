@@ -1,7 +1,37 @@
+// Global variables
 def profilespath = '/home/francois/PROPFILES'
 def git_base_repo_url = 'https://github.com/fdupoux/devops.git'
 def git_branch = 'master'
+def jobdefs = [:]
 
+// Read sensitive variables from properties file
+Properties prop = new Properties()
+prop.load(new FileInputStream("${profilespath}/global.properties"));
+git_extra_repo_url = prop.get("GIT_DEVOPS_PRIVATE").toString()
+
+// Load job definitions from account specific files
+hudson.FilePath workspace = hudson.model.Executor.currentExecutor().getCurrentWorkspace()
+hudson.FilePath searchdir = workspace.child("jenkins")
+println("Attempting to find account specific jobs definitions files in ${searchdir}")
+def resultList = searchdir.list().findAll { it.name  ==~ /account_.*\.groovy/ }
+for (curfile in resultList)
+{
+  println("Found definition file: ${searchdir}/${curfile.name}")
+  def matcher = "${curfile.name}" =~ /account_(?<accname>\w+).groovy/
+  if (matcher.matches() )
+  {
+    def accname = matcher.group('accname')
+    println("Processing definition file: ${searchdir}/${curfile.name}")
+    evaluate(new File("${searchdir}/${curfile.name}"))
+    jobdefs["${accname}"] = getJobs()
+  }
+  else
+  {
+    println("Ignoring definition file: ${searchdir}/${curfile.name}")
+  }
+}
+
+// Initialization part of the shell script which runs ansible
 def script_initialization = """#!/bin/bash
 echo "Job running on \$(hostname -f)"
 echo "AWS_REGION='\${AWS_REGION}'"
@@ -23,81 +53,31 @@ make vendor
 cd ansible
 """
 
-// read list of aws accounts from properties file
-Properties prop = new Properties()
-prop.load(new FileInputStream("${profilespath}/global.properties"));
-aws_accounts = prop.get("AWS_ACCOUNTS_LIST").toString().split(",");
-git_extra_repo_url = prop.get("GIT_DEVOPS_PRIVATE").toString()
+// Create jobs for each account
+jobdefs.each { account, jobs ->
+  for (jobdata in jobs)
+  {
+    def job_disabled = false
+    if (jobdata.containsKey('disabled'))
+    {
+      job_disabled = jobdata.disabled
+    }
+    def ansible_args_extra = ""
+    if (jobdata.containsKey('argsextra'))
+    {
+      ansible_args_extra = jobdata.argsextra
+    }
+    def copy_artifact = ""
+    if (jobdata.containsKey('copy_artifact'))
+    {
+      copy_artifact = jobdata.copy_artifact
+    }
+    def archive_artifact = ""
+    if (jobdata.containsKey('archive_artifact'))
+    {
+      archive_artifact = jobdata.archive_artifact
+    }
 
-// define jobs parameters
-def jobs =
-[
-  [
-    targets: ['centos'],
-    disabled: false,
-    accounts: aws_accounts,
-    category: 'bldami',
-    jnknode: 'slave-infras',
-    archive_artifact: "**/target/ami_id.txt",
-    envs: ['none'],
-  ],
-  [
-    targets: ['websrv'],
-    disabled: false,
-    accounts: [aws_accounts[2]],
-    category: 'bldami',
-    jnknode: 'slave-infras',
-    argsextra: "-e input_ami_id=\${IMPORTED_AMI_ID}",
-    copy_artifact: [category:'bldami', target:'centos', env: 'none', filepath:'**/target/ami_id.txt'],
-    archive_artifact: "**/target/ami_id.txt",
-    envs: ['none'],
-  ],
-  [
-    targets: ['websrv'],
-    disabled: false,
-    accounts: [aws_accounts[2]],
-    category: 'deploy',
-    jnknode: 'slave-infras',
-    argsextra: "-e input_ami_id=\${IMPORTED_AMI_ID}",
-    copy_artifact: [category:'bldami', target:'websrv', env: 'none', filepath:'**/target/ami_id.txt'],
-    envs: ['test', 'prod'],
-  ],
-  [
-    targets: ['websrv'],
-    disabled: false,
-    accounts: [aws_accounts[2]],
-    category: 'config',
-    jnknode: 'slave-infras',
-    envs: ['test', 'prod'],
-  ],
-]
-
-// create jobs
-for (jobdata in jobs)
-{
-  def job_disabled = false
-  if (jobdata.containsKey('disabled'))
-  {
-    job_disabled = jobdata.disabled
-  }
-  def ansible_args_extra = ""
-  if (jobdata.containsKey('argsextra'))
-  {
-    ansible_args_extra = jobdata.argsextra
-  }
-  def copy_artifact = ""
-  if (jobdata.containsKey('copy_artifact'))
-  {
-    copy_artifact = jobdata.copy_artifact
-  }
-  def archive_artifact = ""
-  if (jobdata.containsKey('archive_artifact'))
-  {
-    archive_artifact = jobdata.archive_artifact
-  }
-
-  for (account in jobdata.accounts)
-  {
     for (target in jobdata.targets)
     {
       for (curenv in jobdata.envs)
