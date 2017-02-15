@@ -4,11 +4,6 @@ def git_base_repo_url = 'https://github.com/fdupoux/devops.git'
 def git_branch = 'master'
 def jobdefs = [:]
 
-// Read sensitive variables from properties file
-Properties prop = new Properties()
-prop.load(new FileInputStream("${profilespath}/global.properties"));
-git_extra_repo_url = prop.get("GIT_DEVOPS_PRIVATE").toString()
-
 // Load job definitions from account specific files
 hudson.FilePath workspace = hudson.model.Executor.currentExecutor().getCurrentWorkspace()
 hudson.FilePath searchdir = workspace.child("jenkins")
@@ -78,6 +73,11 @@ jobdefs.each { account, jobs ->
       archive_artifact = jobdata.archive_artifact
     }
 
+    // read sensitive variables from properties file
+    Properties prop = new Properties()
+    prop.load(new FileInputStream("${profilespath}/aws-account-${account}.properties"));
+    git_extra_repo_url = prop.get("GIT_DEVOPS_PRIVATE").toString()
+
     for (target in jobdata.targets)
     {
       for (curenv in jobdata.envs)
@@ -105,7 +105,7 @@ jobdefs.each { account, jobs ->
               branch('origin/' + git_branch)
               extensions
               {
-                  relativeTargetDirectory("git_base_repo")
+                relativeTargetDirectory("git_base_repo")
               }
             }
             // get exta data from additional repository
@@ -118,7 +118,7 @@ jobdefs.each { account, jobs ->
               branch('origin/' + git_branch)
               extensions
               {
-                  relativeTargetDirectory("git_extra_repo")
+                relativeTargetDirectory("git_extra_repo")
               }
             }
           }
