@@ -8,11 +8,11 @@ def jobdefs = [:]
 hudson.FilePath workspace = hudson.model.Executor.currentExecutor().getCurrentWorkspace()
 hudson.FilePath searchdir = workspace.child("jenkins")
 println("Attempting to find account specific jobs definitions files in ${searchdir}")
-def resultList = searchdir.list().findAll { it.name  ==~ /account_.*\.groovy/ }
+def resultList = searchdir.list().findAll { it.name  ==~ /ansible_account_.*\.groovy/ }
 for (curfile in resultList)
 {
   println("Found definition file: ${searchdir}/${curfile.name}")
-  def matcher = "${curfile.name}" =~ /account_(?<accname>\w+).groovy/
+  def matcher = "${curfile.name}" =~ /ansible_account_(?<accname>\w+).groovy/
   if (matcher.matches() )
   {
     def accname = matcher.group('accname')
