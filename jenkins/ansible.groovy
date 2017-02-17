@@ -156,9 +156,14 @@ jobdefs.each { account, jobs ->
             {
               ansible_inventory = jobdata.inventory
             }
+            def ansible_hosts = ""
+            if (jobdata.containsKey('hosts'))
+            {
+              ansible_hosts = "-e hosts=${jobdata.hosts}"
+            }
             def ansible_jobsvars = "-e account=${account} -e aws_region=\${AWS_REGION} -e env=${curenv}"
             def ansible_playbook = "playbook-generic-${jobdata.category}-${target}.yml"
-            def ansible_command = "ansible-playbook -i ${ansible_inventory} ${ansible_jobsvars} ${ansible_args_extra} ${ansible_playbook}"
+            def ansible_command = "ansible-playbook -i ${ansible_inventory} ${ansible_jobsvars} ${ansible_hosts} ${ansible_args_extra} ${ansible_playbook}"
 
             shell("${script_initialization}\n${ansible_command}\n")
           }
