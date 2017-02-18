@@ -158,7 +158,7 @@
              "WRAPPER_SCRIPT='/usr/local/bin/bootstrap-wrapper.sh'\n",
              "touch ${WRAPPER_SCRIPT}\n",
              "echo export BOOTSTRAP_PLAYBOOK=", { "Ref" : "BoostrapPlaybook" }, " >> ${WRAPPER_SCRIPT}\n",
-             "echo export ANSIBLE_ACCOUNT=", { "Ref" : "AnsibleAccount" }, " >> ${WRAPPER_SCRIPT}\n",
+             "echo export ACCOUNT=", { "Ref" : "AnsibleAccount" }, " >> ${WRAPPER_SCRIPT}\n",
              "echo export AWS_REGION=", { "Ref" : "AwsRegion" }, " >> ${WRAPPER_SCRIPT}\n",
              "echo export STACK_NAME=", { "Ref" : "StackName" }, " >> ${WRAPPER_SCRIPT}\n",
              "echo export SIGNAL_RESOURCE='' >> ${WRAPPER_SCRIPT}\n",
