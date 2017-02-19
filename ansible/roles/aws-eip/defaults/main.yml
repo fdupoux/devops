@@ -1,0 +1,9 @@
+---
+# This parameter must be passed when role is added in the dependencies in meta
+aws_eip_newaddress: ''
+
+# Set the following variable to true if the EIP needs to be disassociated first
+aws_eip_disassociate: false
+
+# Other parameters with default values
+aws_eip_retries: 5

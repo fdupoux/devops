@@ -1,0 +1,56 @@
+---
+- name: Make sure the parameter has been passed
+  fail:
+    msg: "The EIP address must be passed using aws_eip_newaddress"
+  when: aws_eip_newaddress == ''
+
+- name: Make sure the EC2 instance ID is defined
+  fail:
+    msg: "The EC2 instance ID (ec2_id) is undefined"
+  when: "ec2_id is undefined"
+
+- name: Make sure the EC2 instance ID is not empty
+  fail:
+    msg: "The EC2 instance ID (ec2_id) is empty"
+  when: "ec2_id == ''"
+
+- name: Show information about current instance and the EIP to be associated
+  debug:
+    msg: "The current instance has ID='{{ ec2_id }}' and aws_eip_newaddress='{{ aws_eip_newaddress }}'"
+
+- name: Show information about the disassociation which is about to be performed
+  debug:
+    msg: "About to disassociate EIP='{{ aws_eip_newaddress }}' from previous owner in group='{{ ec2_tag_ansible_host_group }}'"
+  when: "'{{ aws_eip_disassociate | bool }}' == 'True'"
+
+- name: Show which EC2 instance currently owns the EIP (previous EC2 instance in ASG)
+  debug:
+    msg: "Current owner of EIP='{{ aws_eip_newaddress }}' in group={{ ec2_tag_ansible_host_group }} EC2='{{ hostvars[item]['ec2_id'] }}'"
+  when: "'{{ aws_eip_disassociate | bool }}' == 'True' and '{{ hostvars[item]['ec2_ip_address'] }}' == '{{ aws_eip_newaddress }}'"
+  with_items: "{{ groups[ec2_tag_ansible_host_group] }}"
+
+- name: Disassociate EIP from the current owner (old EC2 instance in ASG which will be terminated)
+  ec2_eip:
+    state: absent
+    region: "{{ ec2_region }}" # Defined by dynamic inventory
+    public_ip: "{{ aws_eip_newaddress }}"
+    device_id: "{{ hostvars[item]['ec2_id'] }}"
+    release_on_disassociation: false
+  when: "'{{ aws_eip_disassociate | bool }}' == 'True' and '{{ hostvars[item]['ec2_ip_address'] }}' == '{{ aws_eip_newaddress }}'"
+  with_items: "{{ groups[ec2_tag_ansible_host_group] }}"
+
+- name: Show information about the association which is about to be performed
+  debug:
+    msg: "About to associate EIP='{{ aws_eip_newaddress }}' with current EC2 instance with ID='{{ ec2_id }}'"
+
+- name: Associate instance with the EIP which has been statically allocated
+  ec2_eip:
+    region: "{{ ec2_region }}" # Defined by dynamic inventory
+    device_id: "{{ ec2_id }}" # Defined by dynamic inventory
+    public_ip: "{{ aws_eip_newaddress }}"
+  retries: '{{ aws_eip_retries }}'
+  delay: 5
+
+- name: Give some time for the EIP to settle down before continuing
+  pause:
+    seconds: 10

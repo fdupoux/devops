@@ -1,0 +1,5 @@
+---
+- include: installation.yml
+  tags: ['aws-eip','installation','aws-eip-installation']
+- include: configuration.yml
+  tags: ['aws-eip','configuration','aws-eip-configuration']

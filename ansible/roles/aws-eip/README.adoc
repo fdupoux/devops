@@ -1,0 +1,23 @@
+README for aws-eip role
+=======================
+
+This role should be the first role applied during the bootstrapping process
+after a new EC2 instance which is part of an Auto-Scaling Group has been
+created. This role is only useful if there is no Elastic-Load-Balancer and
+an Elastic IP address is used by the unique EC2 instance in the ASG. It may
+not be possible to keep a random EIP as this address will not belong to the list
+of trusted IP addresses, and hence the bootstrapping process will fail to
+download packages or data from private repositories. Hence the random address
+assigned by CloudFormation must be replaced with the statically EIP which is
+trusted. For this to work the address has to be disassociated from the old EC2
+instance otherwise the association will fail. The EC2 instance ID of the old EC2
+is required for the disassociation. There is a task which goes through all EC2
+instances of the current group in order to find the ID of the instance which
+currently owns this address. For this to work the current instance must have a
+tag named ansible_host_group which provides the name of the most specific
+ansible host group for the current instance. The previous instance of the same
+Auto-Scaling Group must have been tagged the same way. Once found the EIP will
+be disassociated and associated to the current EC2 instance. The
+aws_eip_disassociate parameter is set to false by default and it should be set
+to true during the bootstrapping process. This is to avoid unnecessary
+disassociation and reassociation of the address when no change is required.
