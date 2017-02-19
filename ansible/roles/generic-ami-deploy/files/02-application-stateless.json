@@ -127,7 +127,7 @@
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "CreationPolicy" : {
         "ResourceSignal" : {
-          "Timeout" : "PT9M",
+          "Timeout" : "PT19M",
           "Count"   : "1"
         }
       },
@@ -135,7 +135,7 @@
         "AutoScalingRollingUpdate" : {
           "MaxBatchSize" : "1",
           "MinInstancesInService" : "1",
-          "PauseTime" : "PT9M",
+          "PauseTime" : "PT19M",
           "WaitOnResourceSignals": "true"
         }
       },
