@@ -1,4 +1,5 @@
 ---
 dependencies:
-  - repositories
-  - basepackages
+  - { role: 'aws-eip', aws_eip_newaddress: '{{ eip_websrv }}' }
+  - { role: 'repositories' }
+  - { role: 'basepackages' }
