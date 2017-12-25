@@ -1,4 +1,7 @@
 ---
+# This parameter can be used to skip this role when no EIP is being used
+aws_eip_enabled: true
+
 # This parameter must be passed when role is added in the dependencies in meta
 aws_eip_newaddress: ''
 
