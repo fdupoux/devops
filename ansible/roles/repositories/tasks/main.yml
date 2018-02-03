@@ -1,5 +1,5 @@
 ---
-- include: installation.yml
+- import_tasks: installation.yml
   tags: ['repositories','installation','repositories-installation']
-- include: configuration.yml
-  tags: ['repositories','configuration','repositories-configuration']
+#- import_tasks: configuration.yml
+#  tags: ['repositories','configuration','repositories-configuration']

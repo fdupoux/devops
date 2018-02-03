@@ -1,5 +1,5 @@
 ---
-- include: installation.yml
+- import_tasks: installation.yml
   tags: ['basepackages','installation','basepackages-installation']
-- include: configuration.yml
-  tags: ['basepackages','configuration','basepackages-configuration']
+#- import_tasks: configuration.yml
+#  tags: ['basepackages','configuration','basepackages-configuration']

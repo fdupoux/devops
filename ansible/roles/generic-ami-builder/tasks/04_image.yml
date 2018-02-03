@@ -7,7 +7,7 @@
     instance_id: "{{ generic_ami_builder_ec2_instance_id }}"
     state: stopped
     wait: True
-  when: '{{ generic_ami_builder_delete_ec2_stack | bool }} == true'
+  when: 'generic_ami_builder_delete_ec2_stack | bool == True'
 
 - name: Determine full name of the new AMI
   set_fact:

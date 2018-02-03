@@ -6,7 +6,7 @@
     region: "{{ generic_ami_builder_aws_region }}"
     stack_name: "{{ generic_ami_builder_ec2_stack_name }}"
     state: "absent"
-  when: '{{ generic_ami_builder_delete_ec2_stack | bool }} == true'
+  when: 'generic_ami_builder_delete_ec2_stack | bool == true'
 
 - name: Destroy temporary stack with the VPC
   cloudformation:
@@ -15,4 +15,4 @@
     region: "{{ generic_ami_builder_aws_region }}"
     stack_name: "{{ generic_ami_builder_vpc_stack_name }}"
     state: "absent"
-  when: '{{ generic_ami_builder_delete_vpc_stack | bool }} == true'
+  when: 'generic_ami_builder_delete_vpc_stack | bool == true'

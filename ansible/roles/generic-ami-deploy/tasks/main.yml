@@ -1,7 +1,7 @@
 ---
-- include: 01_create_vpc.yml
+- import_tasks: 01_create_vpc.yml
   tags: ['installation','generic-ami-deploy','generic-ami-deploy-prepare-vpc']
   when: generic_ami_deploy_step == 'generic-ami-deploy-prepare-vpc'
-- include: 02_deploy_app.yml
+- import_tasks: 02_deploy_app.yml
   tags: ['installation','generic-ami-deploy','generic-ami-deploy-deploy-app']
   when: generic_ami_deploy_step == 'generic-ami-deploy-deploy-app'

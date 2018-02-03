@@ -1,7 +1,7 @@
 ---
-- include: installation.yml
-  tags: ['aws-eip','installation','aws-eip-installation']
-  when: aws_eip_enabled == true
-- include: configuration.yml
+#- import_tasks: installation.yml
+#  tags: ['aws-eip','installation','aws-eip-installation']
+#  when: aws_eip_enabled == true
+- import_tasks: configuration.yml
   tags: ['aws-eip','configuration','aws-eip-configuration']
   when: aws_eip_enabled == true

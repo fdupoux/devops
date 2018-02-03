@@ -57,11 +57,11 @@
       DiskSizeGb: "{{ generic_ami_deploy_disksize }}"
       DiskType: "{{ generic_ami_deploy_disktype }}"
   register: stack_app_data
-  when: '{{ generic_ami_deploy_stateful | bool }} == false'
+  when: 'generic_ami_deploy_stateful | bool == false'
 
 - name: Show output provided by cloudformation
   debug: var=stack_app_data1
-  when: '{{ generic_ami_deploy_stateful | bool }} == false'
+  when: 'generic_ami_deploy_stateful | bool == false'
 
 - name: Deploy application image using an EC2 instance if this is a stateful
   cloudformation:
@@ -94,8 +94,8 @@
       DiskSizeGb: "{{ generic_ami_deploy_disksize }}"
       DiskType: "{{ generic_ami_deploy_disktype }}"
   register: stack_app_data2
-  when: '{{ generic_ami_deploy_stateful | bool }} == true'
+  when: 'generic_ami_deploy_stateful | bool == true'
 
 - name: Show output provided by cloudformation
   debug: var=stack_app_data2
-  when: '{{ generic_ami_deploy_stateful | bool }} == true'
+  when: 'generic_ami_deploy_stateful | bool == true'
