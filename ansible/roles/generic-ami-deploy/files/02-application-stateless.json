@@ -148,7 +148,8 @@
           { "Key" : "ansible_host_group", "Value" : { "Ref": "AnsibleHostGroup" }, "PropagateAtLaunch" : "true" }
         ],
         "MinSize": "1",
-        "MaxSize": "2"
+        "MaxSize": "2",
+        "DesiredCapacity" : "1"
       }
     },
 
