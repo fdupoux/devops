@@ -1,0 +1,73 @@
+#!/bin/bash
+bootstrap_log="/var/log/bootstrap-main.log"
+ansiblepb_log="/var/log/bootstrap-ansible.log"
+
+function writelog
+{
+    echo "$(date): $1" | tee -a ${bootstrap_log}
+    logger -t "bootstrap" -- $1;
+}
+
+function die
+{
+    writelog "$1"
+    sleep 600
+    cfnsignal 1
+    exit 1
+}
+
+function cfnsignal
+{
+    if [ -n "${STACK_NAME}" ] && [ -n "${SIGNAL_RESOURCE}" ]
+    then
+        writelog "Sending signal $1 to stack='${STACK_NAME}' resource='${SIGNAL_RESOURCE}' region='${AWS_REGION}'"
+        /opt/aws/apitools/cfn-init-1.4-1.el7/bin/cfn-signal -e $1 --stack "${STACK_NAME}" --resource "${SIGNAL_RESOURCE}" --region "${AWS_REGION}"
+    fi
+}
+
+# Main code
+writelog "Starting Bootstrapping script: $0"
+
+# Environment
+export PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
+export ANSIBLE_FORCE_COLOR=1
+export PYTHONUNBUFFERED=1
+export playbook_basepath="/bootstrap/playbooks"
+export playbook_fullpath="${playbook_basepath}/${BOOTSTRAP_PLAYBOOK}"
+
+# Get instance meta-data
+export EC2_INSTANCE_ID="$(curl http://169.254.169.254/latest/meta-data/instance-id)"
+
+writelog "Debug: PATH='${PATH}'"
+writelog "Debug: BOOTSTRAP_PLAYBOOK='${BOOTSTRAP_PLAYBOOK}'"
+writelog "Debug: AWS_REGION='${AWS_REGION}'"
+writelog "Debug: ACCOUNT='${ACCOUNT}'"
+writelog "Debug: STACK_NAME='${STACK_NAME}'"
+writelog "Debug: SIGNAL_RESOURCE='${SIGNAL_RESOURCE}'"
+writelog "Debug: EC2_INSTANCE_ID='${EC2_INSTANCE_ID}'"
+
+# Make sure the ansible playbook exists
+test -d ${playbook_basepath} || die "ERROR: no such directory: ${playbook_basepath}"
+test -f ${playbook_fullpath} || die "ERROR: playbook file not found: ${playbook_fullpath}"
+
+# Configure applications using ansible
+ansible_opt="-i hosts-${ACCOUNT} -e host=${EC2_INSTANCE_ID} --connection=local -e aws_eip_disassociate=true"
+ansible_cmd="ansible-playbook ${ansible_opt} ${BOOTSTRAP_PLAYBOOK} --tags=configuration"
+writelog "Debug: ${ansible_cmd}"
+cd ${playbook_basepath}
+${ansible_cmd} 2>&1 | tee ${ansiblepb_log}
+ansible_exitst=${PIPESTATUS[0]}
+
+# Send a signal to the stack to say if the instance has been successfully prepared
+if [ ${ansible_exitst} -eq 0 ]
+then
+  echo "Ansible completed successfully. Sending SUCCESS signal to CloudFormation"
+  cfnsignal 0
+else
+  echo "Ansible failed. Waiting 20 minutes to give time for manual debugging before sending FAILURE signal to CloudFormation"
+  sleep 1200
+  cfnsignal 1
+fi
+
+# Do not leave copy of ansible code on the server
+sleep 1h && rm -rf /bootstrap

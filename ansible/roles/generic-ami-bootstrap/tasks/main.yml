@@ -1,0 +1,5 @@
+---
+- import_tasks: installation.yml
+  tags: ['generic-ami-bootstrap','installation','generic-ami-bootstrap-installation']
+#- import_tasks: configuration.yml
+#  tags: ['generic-ami-bootstrap','configuration','generic-ami-bootstrap-configuration']

@@ -1,0 +1,5 @@
+---
+- import_tasks: installation.yml
+  tags: ['ansible','installation','ansible-installation']
+#- import_tasks: configuration.yml
+#  tags: ['ansible','configuration','ansible-configuration']

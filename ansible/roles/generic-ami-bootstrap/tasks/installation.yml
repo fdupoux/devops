@@ -1,0 +1,38 @@
+---
+- name: Make sure aws-cfn-bootstrap is installed
+  yum:
+    name: aws-cfn-bootstrap
+    state: present
+
+- name: Install bootstrapping script
+  template:
+    src: bootstrap.sh.j2
+    dest: /usr/local/bin/bootstrap.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create directory where to copy ansible bootstrap files
+  file:
+    path: "/bootstrap/playbooks"
+    state: directory
+    mode: 0755
+
+- name: Copy ansible code to the bootstrap directory
+  synchronize:
+    rsync_path: "sudo rsync"
+    src: "{{ playbook_dir }}/"
+    dest: "/bootstrap/playbooks/"
+    archive: yes
+    delete: yes
+
+- name: Set ownerships of files in the bootstrap directory
+  file:
+    path: "/bootstrap/playbooks"
+    recurse: yes
+    owner: root
+    group: root
+
+- name: Make sure the ansible files exist
+  stat:
+    path: "/bootstrap/playbooks/ansible.cfg"

@@ -1,0 +1,7 @@
+ansible_packages:
+  - python-jinja2
+  - python-yaml
+  - python-paramiko
+  - python-crypto
+  - python-keyczar
+  - python-httplib2

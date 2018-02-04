@@ -1,0 +1,14 @@
+---
+- name: Install Ansible dependencies
+  yum:
+    name: "{{ item }}"
+    state: "installed"
+  with_items: '{{ ansible_packages }}'
+
+- name: Install Ansible-2.x packages
+  yum:
+    name: "{{ item }}"
+    state: "installed"
+  with_items:
+    - ansible
+    - ansible-lint
