@@ -18,5 +18,5 @@ three AWS Accounts:
 
 Then the sensitive AWS Access keys for each AWS accounts will be located in
 the following files: "${profilespath}/aws-account-${account}.properties". These
-files will be loaded by Jenkins at the time of the execution and ansible will
+files will be loaded by Jenkins at the time of the execution and Ansible will
 use these environment variables.

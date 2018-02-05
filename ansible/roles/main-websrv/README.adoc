@@ -1,0 +1,5 @@
+main-websrv
+===========
+
+This role is a top-level role which configures a machine as a web server. This
+is still work in progress.

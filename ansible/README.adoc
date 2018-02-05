@@ -11,9 +11,10 @@ There are two types of Ansible roles:
 == Tags
 Ansible roles will use the following tags:
 
-* *installation* for tasks must be executed when installing stuff during the
-  creation of the AMI at a time details about the server are not known
-* *configuration* when the tasks must be executed to configure stuff during
-  the bootstrap stage at the creation of the EC2 instance in an
+* *installation* for tasks which must be executed when installing software
+  during the creation of the AMI at a time details about the server are not
+  known
+* *configuration* for tasks which must be executed to apply the configuration
+  during the bootstrap stage at the creation of the EC2 instance in an
   Auto-Scaling-Group or at a later stage when the configuration needs to be
   modified

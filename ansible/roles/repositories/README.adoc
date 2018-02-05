@@ -1,0 +1,4 @@
+repositories
+============
+
+This role configures important package repositories such as EPEL on the system.

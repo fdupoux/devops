@@ -1,0 +1,6 @@
+generic-ami-bootstrap
+=====================
+
+This role implements the bootstrapping process which needs to run after a new
+EC2 instance has been created in order to apply the right configuration to it.
+This role need to be applied at the time the AMI is being created.

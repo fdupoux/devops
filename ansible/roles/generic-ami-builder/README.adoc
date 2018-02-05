@@ -1,0 +1,20 @@
+generic-ami-builder
+===================
+
+This role implements the AWS logic required in order to create an application
+AMI from a base AMI using Ansible. This role uses CloudFormation to create a
+temporary VPC environment with a disposable EC2 instance where Ansible can be
+run in order to install the software that needs to be deployed to the new AMI.
+This role will then provide the code to create the AMI from the disposable EC2
+instance and will cleanup the environment when this has been done. 
+
+The Ansible playbook needs to pass an appropriate value for the
+"generic_ami_builder_step" parameter in order to indicate which step of the
+process needs to be executed. Hence the playbook using this role must call this
+role five times with the five possible values for this parameter in order to
+complete the full process of creating an AMI, and it must apply the role which
+will deploy the actual software between the following steps:
+"generic-ami-builder-prepare-ec2" and "generic-ami-builder-tmpfiles".
+
+You can have a look at playbooks provided as part of this repository for
+examples about how to use this role.

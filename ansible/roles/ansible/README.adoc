@@ -1,0 +1,4 @@
+ansible
+=======
+
+This role installs the Ansible package and all its dependencies on the system.

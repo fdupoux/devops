@@ -1,14 +1,16 @@
 DevOps repository
 =================
 
-This repository contains all my DevOps related code. This code creates Jenkins
-jobs which then run Ansible to build servers using a pipeline with multiple
-stages following the immutable infrastructure principles.
+This repository provides some DevOps code which uses AWS with Jenkins and
+Ansible to configure servers following the immutable infrastructure principles.
+A new version of an application AMI should be created each time a change is
+required so each change can be reverted by switching back to a previous version
+of the AMI.
 
 == Jenkins
 The jenkins directory contains groovy files which are executed through the
 https://wiki.jenkins-ci.org/display/JENKINS/Job+DSL+Plugin[Jenkins-DSL] in order
-to crate and update the configuration of all Jenkins jobs from code so these
+to create and update the configuration of all Jenkins jobs from code so these
 jobs can never be lost and so we can track all changes easily. All sensitive
 information is excluded from this repository and will be loaded by Jenkins from
 properties files.
@@ -17,8 +19,9 @@ properties files.
 The ansible directory contains many roles to build AMI images, EC2 environments
 using CloudFormation, and manage EC2 instances. All sensitive information such
 as AWS Access Keys is excluded from this repository and will be passed by the
-Jenkins jobs as environmnet variables or loaded from group_vars variables which
-are stored in a private repository.
+Jenkins jobs as environment variables or loaded from group_vars variables. Other
+Ansible roles and configuration (host_vars + group_vars) need to be added in
+order to make use of this code.
 
 == Workflow
 This DevOps code implements the following jobs:

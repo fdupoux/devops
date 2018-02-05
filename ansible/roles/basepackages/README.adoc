@@ -1,0 +1,5 @@
+basepackages
+============
+
+This role installs all common packages that must be installed on all systems so
+the system can be configured via Ansible and so it is usable.

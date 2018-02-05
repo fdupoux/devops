@@ -1,0 +1,8 @@
+generic-ami-deploy
+===================
+
+This role implements the AWS logic required in order to deploy an application
+AMI into an EC2 environment for serving requests. This role is using
+CloudFormation and provides two steps to create the VPC and then create the EC2
+instances from the AMI. You can have a look at playbooks provided in this
+repository to find examples which show how to use this role.
