@@ -1,0 +1,41 @@
+#!/usr/bin/env groovy
+
+node {
+  try {
+    wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+      stage('Checkout') {
+        checkout scm
+      }
+
+      stage('virtualenv') {
+        sh """
+          mkdir -p ${WORKSPACE}/virtualenv
+          cd ${WORKSPACE}/virtualenv
+          virtualenv myenv
+          source ${WORKSPACE}/virtualenv/myenv/bin/activate
+          pip install 'ansible==2.6.6'
+          pip install 'molecule==2.19'
+          pip install 'docker==3.5.1'
+        """
+      }
+
+      stage('tests') {
+        sh """
+          source ${WORKSPACE}/virtualenv/myenv/bin/activate
+          cd ${WORKSPACE}/ansible/roles/basepackages
+          molecule test
+        """
+      }
+    }
+  } catch (err) {
+    throw err
+  } finally {
+    stage('Cleanup') {
+      sh """
+        source ${WORKSPACE}/virtualenv/myenv/bin/activate
+        cd ${WORKSPACE}/ansible/roles/basepackages
+        molecule destroy
+      """
+    }
+  }
+}

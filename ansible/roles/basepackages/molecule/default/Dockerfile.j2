@@ -1,0 +1,9 @@
+# Molecule managed
+
+{% if item.registry is defined %}
+FROM {{ item.registry.url }}/{{ item.image }}
+{% else %}
+FROM {{ item.image }}
+{% endif %}
+
+RUN yum makecache fast && yum install -y python sudo bash && yum clean all;
