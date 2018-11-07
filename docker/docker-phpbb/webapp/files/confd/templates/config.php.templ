@@ -1,0 +1,12 @@
+<?php
+$dbms = '{{ getenv "WEBAPP_DBTYPE" }}';
+$dbhost = '{{ getenv "WEBAPP_DBHOST" }}';
+$dbport = '{{ getenv "WEBAPP_DBPORT" }}';
+$dbname = '{{ getenv "WEBAPP_DBNAME" }}';
+$dbuser = '{{ getenv "WEBAPP_DBUSER" }}';
+$dbpasswd = '{{ getenv "WEBAPP_DBPASS" }}';
+$table_prefix = '{{ getenv "WEBAPP_DBPREFIX" }}';
+$acm_type = 'file';
+$load_extensions = '';
+@define('PHPBB_INSTALLED', true);
+?>

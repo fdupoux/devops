@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+
+  webapp:
+    build: ./webapp
+    ports:
+      - "8080:80"
+    environment:
+      - WEBAPP_DBTYPE=mysqli
+      - WEBAPP_DBHOST=mysqldb
+      - WEBAPP_DBPORT=3306
+      - WEBAPP_DBNAME=phpbb
+      - WEBAPP_DBUSER=phpbb
+      - WEBAPP_DBPASS=password
+      - WEBAPP_DBPREFIX=phpbb_
+
+  mysqldb:
+    image: mariadb:5.5.62
+    container_name: mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=phpbb
+      - MYSQL_USER=phpbb
+    ports:
+      - "3306:3306"
+    volumes:
+      - "mysqldata:/var/lib/mysql"
+
+volumes:
+  mysqldata:
