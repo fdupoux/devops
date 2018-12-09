@@ -12,7 +12,7 @@ export KOPS_TRUSTED_IPS=$(< ~/SECRETS/aws-kops-cfg-trusted-ips.txt)
 # Parameters
 export KOPS_DIGITAL_OCEAN_REGION='ams3'
 export KOPS_DIGITAL_OCEAN_NODESPEC_MASTERS='s-1vcpu-2gb'
-export KOPS_DIGITAL_OCEAN_NODESPEC_SLAVES='s-1vcpu-2gb'
+export KOPS_DIGITAL_OCEAN_NODESPEC_SLAVES='s-1vcpu-1gb'
 
 # Print variables
 echo "KOPS_STATE_STORE='${KOPS_STATE_STORE}'"

@@ -11,7 +11,7 @@ export AWS_SECRET_ACCESS_KEY=$(< ~/SECRETS/aws-kops-key-secret.txt)
 export AWS_REGION='eu-west-1'
 export AWS_VPC_CIDR='10.77.0.0/16'
 export KOPS_EBS_VOL_SIZE="16"
-export KOPS_EC2_TYPE_MASTERS="t2.micro"
+export KOPS_EC2_TYPE_MASTERS="t2.small"
 export KOPS_EC2_TYPE_SLAVES="t2.micro"
 
 # Print variables
