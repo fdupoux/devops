@@ -2,7 +2,7 @@
 set -e
 
 # Set default value to variables when empty
-export WEBAPP_DBTYPE=${WEBAPP_DBTYPE:-mysqli}
+export PHPBB_DATABASE_TYPE=${PHPBB_DATABASE_TYPE:-mysqli}
 
 # Generate configuration files from parameters
 /usr/bin/confd -onetime -backend env

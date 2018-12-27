@@ -1,11 +1,11 @@
 <?php
-$dbms = '{{ getenv "WEBAPP_DBTYPE" }}';
-$dbhost = '{{ getenv "WEBAPP_DBHOST" }}';
-$dbport = '{{ getenv "WEBAPP_DBPORT" }}';
-$dbname = '{{ getenv "WEBAPP_DBNAME" }}';
-$dbuser = '{{ getenv "WEBAPP_DBUSER" }}';
-$dbpasswd = '{{ getenv "WEBAPP_DBPASS" }}';
-$table_prefix = '{{ getenv "WEBAPP_DBPREFIX" }}';
+$dbms = '{{ getenv "PHPBB_DATABASE_TYPE" }}';
+$dbhost = '{{ getenv "PHPBB_DATABASE_HOST" }}';
+$dbport = '{{ getenv "PHPBB_DATABASE_PORT" }}';
+$dbname = '{{ getenv "PHPBB_DATABASE_NAME" }}';
+$dbuser = '{{ getenv "PHPBB_DATABASE_USER" }}';
+$dbpasswd = '{{ getenv "PHPBB_DATABASE_PASS" }}';
+$table_prefix = '{{ getenv "PHPBB_DATABASE_PREFIX" }}';
 $acm_type = 'file';
 $load_extensions = '';
 @define('PHPBB_INSTALLED', true);
