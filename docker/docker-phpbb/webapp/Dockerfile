@@ -47,6 +47,7 @@ RUN curl --output /var/tmp/phpBB.tar.bz2 https://www.phpbb.com/files/release/php
 # Install phpBB
 RUN rm -rf /var/www/* ; tar xfjv /var/tmp/phpBB.tar.bz2 -C /var/www/ --strip-components=1
 RUN rm -rf /var/www/install
+RUN rm -f /var/tmp/phpBB.tar.bz2
 RUN chown nginx:nginx /var/www/ -R && chmod 644 /var/www/ -R && chmod +X /var/www/ -R
 
 # Configure php-fpm
