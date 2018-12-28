@@ -35,7 +35,7 @@ RUN mkdir -p /run/php-fpm/
 RUN yum -y install bzip2 php-curl php-json php-gd php-mysql php-zlib php-ftp php-xml
 
 # Debugging packages
-RUN yum -y install mlocate less vim net-tools tcpdump bind-utils nmap-ncat telnet
+# RUN yum -y install mlocate less vim net-tools tcpdump bind-utils nmap-ncat telnet
 
 # Cleanup
 RUN yum clean all
