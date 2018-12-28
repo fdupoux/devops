@@ -12,7 +12,7 @@ RUN yum -y install epel-release
 RUN yum -y install https://github.com/fdupoux/rubackup/releases/download/0.2.3/rubackup-0.2.3-1.el7.noarch.rpm
 
 # Install dependencies
-RUN yum -y install mariadb
+RUN yum -y install wget gnupg2 mariadb
 
 # Cleanup
 RUN yum clean all
