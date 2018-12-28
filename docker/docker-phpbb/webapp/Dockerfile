@@ -29,7 +29,6 @@ ADD files/index.php /var/www/index.php
 
 # Adding the configuration file of the Supervisor
 ADD files/etc/supervisord.conf /etc/supervisord.conf
-RUN mkdir -p /run/php-fpm/
 
 # Install packages
 RUN yum -y install bzip2 php-curl php-json php-gd php-mysql php-zlib php-ftp php-xml
@@ -46,12 +45,12 @@ RUN curl --output /var/tmp/phpBB.tar.bz2 https://www.phpbb.com/files/release/php
 
 # Install phpBB
 RUN rm -rf /var/www/* ; tar xfjv /var/tmp/phpBB.tar.bz2 -C /var/www/ --strip-components=1
-RUN rm -rf /var/www/install
-RUN rm -f /var/tmp/phpBB.tar.bz2
+RUN rm -rf /var/www/install && rm -f /var/tmp/phpBB.tar.bz2
 RUN chown nginx:nginx /var/www/ -R && chmod 644 /var/www/ -R && chmod +X /var/www/ -R
 
 # Configure php-fpm
 RUN sed -i -e 's/user.*/user = nginx/' -e 's/group.*/group = nginx/' /etc/php-fpm.d/www.conf
+RUN mkdir -p /run/php-fpm/
 
 # Add files
 ADD files/start.sh /start.sh
