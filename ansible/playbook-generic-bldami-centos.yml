@@ -14,6 +14,6 @@
       centos_ami_builder_vgname: "vgmain"
       centos_ami_builder_disksize: "3"
       centos_ami_builder_bootsize: "256M"
-      centos_ami_builder_rootsize: "2048M"
+      centos_ami_builder_rootsize: "2560M"
       centos_ami_builder_ami_name: "ami_centos7_custom"
       centos_ami_builder_ami_tags: {account: '{{ account }}', ami_type: 'minimal', os_name: 'centos', os_majver: '7'}
