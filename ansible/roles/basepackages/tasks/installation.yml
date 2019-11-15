@@ -1,4 +1,5 @@
 ---
 - name: Install base packages
-  yum: name={{ item }} state=installed
-  with_items: '{{ basepackages_pkglist }}'
+  yum:
+    name: "{{ basepackages_pkglist }}"
+    state: "installed"
